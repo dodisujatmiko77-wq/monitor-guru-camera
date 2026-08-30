@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <title>Monitor Guru — Kamera</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">MONITOR GURU</div>
+        <h1>Foto Masuk Kelas</h1>
+      </div>
+      <button id="closeBtn" class="icon-btn" type="button" aria-label="Tutup">×</button>
+    </header>
+
+    <section class="card info">
+      <div class="row"><span>Guru</span><strong id="teacherName">Menunggu data…</strong></div>
+      <div class="row"><span>Kelas</span><strong id="className">—</strong></div>
+      <div class="row"><span>Mata Pelajaran</span><strong id="subjectName">—</strong></div>
+      <div class="row"><span>Jadwal</span><strong id="scheduleTime">—</strong></div>
+    </section>
+
+    <section class="camera-card">
+      <div class="camera-wrap">
+        <video id="video" autoplay playsinline muted></video>
+        <div id="guide" class="guide"><span>Guru + beberapa siswa</span></div>
+        <div id="cameraMessage" class="camera-message">Menyiapkan kamera…</div>
+      </div>
+
+      <canvas id="canvas" hidden></canvas>
+      <img id="preview" alt="Pratinjau foto" hidden>
+    </section>
+
+    <section id="actions" class="actions">
+      <button id="captureBtn" class="primary" type="button" disabled>📷 AMBIL FOTO</button>
+      <button id="switchBtn" class="secondary" type="button" hidden>↔ GANTI KAMERA</button>
+    </section>
+
+    <section id="previewActions" class="actions" hidden>
+      <button id="confirmBtn" class="primary" type="button">✓ KONFIRMASI & KIRIM</button>
+      <button id="retakeBtn" class="secondary" type="button">↻ FOTO ULANG</button>
+    </section>
+
+    <div id="status" class="status" role="status"></div>
+
+    <footer>
+      Kamera hanya digunakan untuk dokumentasi Monitor Guru.
+    </footer>
+  </main>
+  <script src="camera.js"></script>
+</body>
+</html>

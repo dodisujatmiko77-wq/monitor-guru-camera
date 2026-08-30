@@ -1,0 +1,24 @@
+*{box-sizing:border-box}
+:root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#e5e7eb;background:#020617}
+body{margin:0;min-height:100vh;background:linear-gradient(145deg,#020617,#0f172a)}
+.app{width:min(760px,100%);margin:auto;padding:18px 16px 28px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.eyebrow{font-size:10px;letter-spacing:.18em;font-weight:900;color:#818cf8}
+h1{font-size:22px;margin:4px 0 0;font-weight:900}
+.icon-btn{width:42px;height:42px;border:0;border-radius:14px;background:#ffffff12;color:#fff;font-size:28px;cursor:pointer}
+.card,.camera-card{background:#0f172acc;border:1px solid #ffffff12;border-radius:24px;box-shadow:0 18px 50px #0005}
+.info{padding:15px 17px;margin-bottom:14px}
+.row{display:flex;justify-content:space-between;gap:20px;padding:7px 0;font-size:13px}
+.row span{color:#94a3b8}.row strong{text-align:right}
+.camera-card{padding:10px;overflow:hidden}
+.camera-wrap{position:relative;aspect-ratio:4/3;background:#000;border-radius:19px;overflow:hidden}
+video,img{width:100%;height:100%;object-fit:cover;display:block}
+.guide{position:absolute;inset:12%;border:2px solid #ffffffaa;border-radius:28px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;pointer-events:none}
+.guide span{background:#0009;padding:7px 12px;border-radius:999px;font-size:11px}
+.camera-message{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#0008;font-weight:800}
+.actions{display:grid;gap:10px;margin-top:14px}
+button{font:inherit;font-weight:900;border:0;border-radius:17px;padding:16px;cursor:pointer}
+.primary{background:#4f46e5;color:white}.secondary{background:#ffffff12;color:#e5e7eb;border:1px solid #ffffff18}
+button:disabled{opacity:.45;cursor:not-allowed}
+.status{min-height:24px;margin-top:12px;text-align:center;font-size:13px;color:#cbd5e1}
+footer{text-align:center;color:#64748b;font-size:11px;margin-top:18px}
