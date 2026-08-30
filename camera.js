@@ -6,7 +6,8 @@
     facingMode: "environment",
     photoData: "",
     payload: null,
-    sending: false
+    sending: false,
+    parentOrigin: ""
   };
 
   const $ = id => document.getElementById(id);
@@ -143,8 +144,15 @@
 
     // Untuk integrasi aplikasi utama:
     // window.opener menerima hasil dengan postMessage.
-    if (window.opener && !window.opener.closed) {
-      window.opener.postMessage(message, "*");
+    if (
+      window.opener &&
+      !window.opener.closed &&
+      state.parentOrigin
+    ) {
+      window.opener.postMessage(
+        message,
+        state.parentOrigin
+      );
       setStatus("Foto berhasil dikirim ke aplikasi utama.");
       setTimeout(() => window.close(), 900);
     } else {
@@ -161,6 +169,11 @@
     window.addEventListener("message", event => {
       const data = event.data;
       if (!data || data.type !== "MONITOR_GURU_CAMERA_INIT") return;
+
+      // Simpan origin aplikasi induk agar hasil foto
+      // dikirim kembali hanya ke origin yang sudah
+      // melakukan handshake.
+      state.parentOrigin = event.origin;
 
       state.payload = data.context || null;
 
@@ -195,6 +208,20 @@
   });
 
   readContext();
+
+  // Beri tahu aplikasi utama bahwa halaman kamera sudah siap.
+  if (window.opener && !window.opener.closed) {
+    try {
+      window.opener.postMessage(
+        {
+          type: "MONITOR_GURU_CAMERA_READY"
+        },
+        "*"
+      );
+    } catch (e) {
+      console.warn("Handshake kamera gagal:", e);
+    }
+  }
 
   if (!navigator.mediaDevices?.getUserMedia) {
     $("cameraMessage").textContent = "Browser tidak mendukung kamera";
