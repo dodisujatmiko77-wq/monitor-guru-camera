@@ -7,7 +7,8 @@
     photoData: "",
     payload: null,
     sending: false,
-    parentOrigin: ""
+    parentOrigin: "",
+    parentWindow: null
   };
 
   const $ = id => document.getElementById(id);
@@ -142,19 +143,16 @@
       capturedAt: new Date().toISOString()
     };
 
-    // Untuk integrasi aplikasi utama:
-    // window.opener menerima hasil dengan postMessage.
-    if (
-      window.opener &&
-      !window.opener.closed &&
-      state.parentOrigin
-    ) {
-      window.opener.postMessage(
-        message,
-        state.parentOrigin
-      );
+    // Integrasi aplikasi utama: dukung iframe (Median/WebView) dan popup lama.
+    const targetWindow = state.parentWindow || window.opener;
+    if (targetWindow && state.parentOrigin) {
+      targetWindow.postMessage(message, state.parentOrigin);
       setStatus("Foto berhasil dikirim ke aplikasi utama.");
-      setTimeout(() => window.close(), 900);
+      if (state.parentWindow) {
+        setTimeout(() => stopCamera(), 300);
+      } else {
+        setTimeout(() => window.close(), 900);
+      }
     } else {
       // Mode mandiri untuk pengujian kamera.
       setStatus("Foto berhasil diambil. Mode tes mandiri aktif.");
@@ -164,15 +162,56 @@
     }
   }
 
+  function readUrlContext() {
+    /*
+     * Fallback untuk Median/Android/WebView:
+     * konteks jadwal dapat ditempel pada URL kamera.
+     * Ini dipakai bila window.opener/postMessage tidak tersedia.
+     */
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (!params.has("namaGuru") && !params.has("scheduleId")) {
+        return null;
+      }
+
+      const context = {
+        mode: params.get("mode") || "IN",
+        scheduleId: params.get("scheduleId") || "",
+        namaGuru: params.get("namaGuru") || "",
+        kelas: params.get("kelas") || "",
+        mataPelajaran: params.get("mataPelajaran") || "",
+        jamMulai: params.get("jamMulai") || "",
+        jamSelesai: params.get("jamSelesai") || "",
+        ruang: params.get("ruang") || ""
+      };
+
+      state.payload = context;
+
+      $("teacherName").textContent = context.namaGuru || "—";
+      $("className").textContent = context.kelas || "—";
+      $("subjectName").textContent = context.mataPelajaran || "—";
+      $("scheduleTime").textContent =
+        context.jamMulai && context.jamSelesai
+          ? `${context.jamMulai} - ${context.jamSelesai}`
+          : "—";
+
+      return context;
+    } catch (e) {
+      console.warn("Gagal membaca konteks URL kamera:", e);
+      return null;
+    }
+  }
+
   function readContext() {
     // Konteks dapat dikirim dari aplikasi utama melalui postMessage.
     window.addEventListener("message", event => {
       const data = event.data;
       if (!data || data.type !== "MONITOR_GURU_CAMERA_INIT") return;
 
-      // Simpan origin aplikasi induk agar hasil foto
-      // dikirim kembali hanya ke origin yang sudah
-      // melakukan handshake.
+      // Mendukung iframe (event.source = parent) maupun popup lama.
+      if (event.source !== window.parent && event.source !== window.opener) return;
+
+      state.parentWindow = event.source;
       state.parentOrigin = event.origin;
 
       state.payload = data.context || null;
@@ -200,27 +239,30 @@
   $("switchBtn").addEventListener("click", switchCamera);
   $("closeBtn").addEventListener("click", () => {
     stopCamera();
-    if (window.opener && !window.opener.closed) {
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: "MONITOR_GURU_CAMERA_CANCEL" }, state.parentOrigin || "*");
+    } else if (window.opener && !window.opener.closed) {
       window.close();
     } else {
       history.back();
     }
   });
 
+  // Ambil konteks dari URL terlebih dahulu sebagai fallback Median.
+  readUrlContext();
   readContext();
 
   // Beri tahu aplikasi utama bahwa halaman kamera sudah siap.
-  if (window.opener && !window.opener.closed) {
-    try {
-      window.opener.postMessage(
-        {
-          type: "MONITOR_GURU_CAMERA_READY"
-        },
+  try {
+    const target = window.parent !== window ? window.parent : window.opener;
+    if (target) {
+      target.postMessage(
+        { type: "MONITOR_GURU_CAMERA_READY" },
         "*"
       );
-    } catch (e) {
-      console.warn("Handshake kamera gagal:", e);
     }
+  } catch (e) {
+    console.warn("Handshake kamera gagal:", e);
   }
 
   if (!navigator.mediaDevices?.getUserMedia) {
